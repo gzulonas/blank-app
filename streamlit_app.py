@@ -37,7 +37,7 @@ if not text:
 
 # ---------------- Results ----------------
 
-v1 = solution.reverseVowels(text)
+v1 = solution.reverseVowels(text, vowels)
 v2 = solution.reverseSpokenVowels(text, vowels, min_len)
 
 left, right = st.columns(2)

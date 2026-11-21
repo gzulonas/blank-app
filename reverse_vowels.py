@@ -17,9 +17,9 @@ VOWELS_LT = "aeiouyąęėįųūAEIOUYĄĘĖĮŲŪ"
 class Solution(object):
 
     # ---------------- Version 1: every vowel moves ----------------
-    def reverseVowels(self, s):
-        #Step 1: Define the set of vowels
-        vowels = "aeiouAEIOU"
+    def reverseVowels(self, s, vowels=VOWELS_EN):
+        #Step 1: Define the set of vowels (defaults to the LeetCode set, so
+        #        reverseVowels(s) still behaves exactly as the original)
 
         #Step 2: Collect all vowels from the string
         collected_vowels = []
