@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Two rules for reversing the vowels in a string, side by side.">
+<style>
+  :root {
+    color-scheme: light;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Reverse Vowels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+  /* Layout: single reading column, dictionary-entry rhythm; proofreader's red
+     marks what moves, graphite marks what is pinned in place. */
+  :root {
+    --paper:   #f6f6f7;
+    --surface: #ffffff;
+    --ink:     #15151a;
+    --mute:    #6d6d7a;
+    --rule:    #e3e3e8;
+    --mark:    #c8372d;   /* moves */
+    --mark-bg: #c8372d1f;
+    --pin:     #5d6470;   /* frozen */
+    --pin-bg:  #5d647014;
+
+    --display: "Newsreader", Georgia, "Times New Roman", serif;
+    --body:    "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0e0e11;
+      --surface: #17171c;
+      --ink:     #ececf1;
+      --mute:    #9a9aa8;
+      --rule:    #2a2a33;
+      --mark:    #ff7265;
+      --mark-bg: #ff726524;
+      --pin:     #99a2b0;
+      --pin-bg:  #99a2b01a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0e0e11;
+    --surface: #17171c;
+    --ink:     #ececf1;
+    --mute:    #9a9aa8;
+    --rule:    #2a2a33;
+    --mark:    #ff7265;
+    --mark-bg: #ff726524;
+    --pin:     #99a2b0;
+    --pin-bg:  #99a2b01a;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 2.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  header { display: flex; flex-direction: column; gap: .4rem; }
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(2rem, 7vw, 2.9rem);
+    line-height: 1.05;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .sub { color: var(--mute); margin: 0; max-width: 40rem; }
+  .ipa {
+    font-family: var(--display);
+    font-style: italic;
+    color: var(--mark);
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  label.field { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+  .lbl {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    font-weight: 600;
+    color: var(--mute);
+  }
+  input[type="text"], select {
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    padding: .6rem .7rem;
+    width: 100%;
+    min-width: 0;
+  }
+  input[type="text"]:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--mark);
+    outline-offset: 2px;
+  }
+  .controls { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .controls > * { flex: 1 1 13rem; }
+
+  .presets { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .presets button {
+    font-family: var(--mono);
+    font-size: .82rem;
+    color: var(--mute);
+    background: transparent;
+    border: 1px solid var(--rule);
+    border-radius: 99px;
+    padding: .25rem .7rem;
+    cursor: pointer;
+  }
+  .presets button:hover { color: var(--ink); border-color: var(--mark); }
+
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .results { grid-template-columns: 1fr; } }
+  .result { min-width: 0; }
+  .result h2 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 .1rem;
+  }
+  .rule-note { font-size: .82rem; color: var(--mute); margin: 0 0 .55rem; }
+  .out {
+    font-family: var(--mono);
+    font-size: 1.05rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    padding: .7rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    min-height: 1.5rem;
+  }
+  .unchanged {
+    font-size: .78rem;
+    color: var(--mute);
+    font-style: italic;
+    margin: .4rem 0 0;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  .scan {
+    font-family: var(--mono);
+    font-size: 1.15rem;
+    line-height: 2;
+    overflow-wrap: anywhere;
+  }
+  .cluster {
+    color: var(--mark);
+    background: var(--mark-bg);
+    font-weight: 700;
+    border-radius: 3px;
+    padding: .1em .05em;
+  }
+  .lone {
+    color: var(--pin);
+    background: var(--pin-bg);
+    border-bottom: 2px dotted var(--pin);
+    border-radius: 3px 3px 0 0;
+    padding: .1em .05em;
+  }
+  .legend { display: flex; gap: 1.1rem; flex-wrap: wrap; font-size: .82rem; color: var(--mute); }
+  .swatch { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; vertical-align: -1px; margin-right: .35rem; }
+
+  .flow { font-family: var(--mono); font-size: .9rem; display: flex; flex-wrap: wrap; gap: .4rem .5rem; align-items: center; }
+  .chip { background: var(--mark-bg); color: var(--mark); border-radius: 4px; padding: .1rem .4rem; font-weight: 700; }
+  .chip.dim { background: var(--pin-bg); color: var(--pin); font-weight: 400; }
+  .arrow { color: var(--mute); }
+  .flow-label { font-family: var(--body); color: var(--mute); font-size: .82rem; margin-right: .2rem; }
+
+  details { border-top: 1px solid var(--rule); padding-top: 1.25rem; }
+  summary { cursor: pointer; font-weight: 600; font-family: var(--display); font-size: 1.1rem; }
+  details p { color: var(--mute); max-width: 42rem; }
+  details code { font-family: var(--mono); font-size: .88em; color: var(--ink); }
+  footer { color: var(--mute); font-size: .82rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <h1>Reverse Vowels</h1>
+    <p class="sub">
+      Two rules for the same idea. Consonants, spaces and punctuation never move —
+      only the vowels do. The second rule moves only <em>clusters</em>: two or more
+      vowel letters in a row, the written shape of a spoken diphthong like
+      <span class="ipa">ei</span>, <span class="ipa">ou</span>, <span class="ipa">eau</span>.
+      A vowel standing alone is a landmark and stays put.
+    </p>
+  </header>
+
+  <div class="panel">
+    <label class="field">
+      <span class="lbl">Text</span>
+      <input type="text" id="text" value="beautiful house" spellcheck="false" autocomplete="off">
+    </label>
+
+    <div class="presets" id="presets"></div>
+
+    <div class="controls">
+      <label class="field">
+        <span class="lbl">Vowel set</span>
+        <select id="vset">
+          <option value="en">English · a e i o u</option>
+          <option value="lt">Lithuanian · + ą ę ė į ų ū y</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="lbl">Min cluster length</span>
+        <select id="minlen">
+          <option value="1">1 — every vowel moves</option>
+          <option value="2" selected>2 — diphthongs and longer</option>
+          <option value="3">3 — triphthongs and longer</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="result panel">
+      <div>
+        <h2>Version 1</h2>
+        <p class="rule-note">Every vowel is movable</p>
+        <div class="out" id="out1"></div>
+      </div>
+    </div>
+    <div class="result panel">
+      <div>
+        <h2>Version 2</h2>
+        <p class="rule-note" id="rule2">Only clusters of 2+ are movable</p>
+        <div class="out" id="out2"></div>
+        <p class="unchanged" id="unchanged" hidden>unchanged — fewer than two clusters to swap</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>What the algorithm sees</h3>
+    <div class="scan" id="scan"></div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--mark)"></span>cluster — moves</span>
+      <span><span class="swatch" style="background:var(--pin)"></span>lone vowel — pinned</span>
+    </div>
+    <div class="flow" id="flow"></div>
+  </div>
+
+  <details>
+    <summary>Why <span class="ipa">ICE</span> comes back untouched</summary>
+    <p>
+      In <code>ICE</code> the <code>I</code> and the <code>E</code> are each alone on
+      the page, separated by <code>C</code>. Version 2 pins both, so the word is
+      returned exactly as given.
+    </p>
+    <p>
+      Spoken, it is a different story: <code>ICE</code> is <span class="ipa">/aɪs/</span>,
+      a real diphthong hidden inside one written letter. English spelling does not
+      mark it, and <code>ICE</code> and <code>SIT</code> both show a lone
+      <code>I</code> while sounding nothing alike. No letter-level rule can tell them
+      apart. Catching the spoken vowel needs a pronunciation dictionary — CMUdict
+      through <code>nltk</code> or <code>pronouncing</code> in Python — to map each
+      word to phonemes first, reverse those, then spell the result back out, which is
+      the lossy part.
+    </p>
+  </details>
+
+  <footer>
+    Both rules are ported from the Python in <code>reverse_vowels.py</code>:
+    <code>reverseVowels</code> and <code>reverseSpokenVowels</code>.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var SETS = {
+    en: "aeiouAEIOU",
+    lt: "aeiouyąęėįųūAEIOUYĄĘĖĮŲŪ"
+  };
+
+  var PRESETS = [
+    "beautiful house",
+    "ICE",
+    "see you later",
+    "road trip queue",
+    "Hello, World!",
+    "Autumn",
+    "Ąžuolas"
+  ];
+
+  function isVowel(ch, vowels) { return vowels.indexOf(ch) !== -1; }
+
+  // Version 1 — every vowel letter is movable.
+  function reverseAll(s, vowels) {
+    var collected = [];
+    for (var i = 0; i < s.length; i++) {
+      if (isVowel(s[i], vowels)) collected.push(s[i]);
+    }
+    collected.reverse();
+    var out = "", k = 0;
+    for (var j = 0; j < s.length; j++) {
+      out += isVowel(s[j], vowels) ? collected[k++] : s[j];
+    }
+    return out;
+  }
+
+  // Maximal runs of consecutive vowels.
+  function vowelRuns(s, vowels) {
+    var runs = [], i = 0;
+    while (i < s.length) {
+      if (isVowel(s[i], vowels)) {
+        var j = i;
+        while (j < s.length && isVowel(s[j], vowels)) j++;
+        runs.push({ start: i, end: j, text: s.slice(i, j) });
+        i = j;
+      } else {
+        i++;
+      }
+    }
+    return runs;
+  }
+
+  // Version 2 — only runs of minLen+ move; each keeps its own spelling.
+  function reverseClusters(s, vowels, minLen) {
+    var clusters = vowelRuns(s, vowels).filter(function (r) {
+      return r.end - r.start >= minLen;
+    });
+    var texts = clusters.map(function (r) { return r.text; }).reverse();
+    var out = "", prev = 0;
+    for (var i = 0; i < clusters.length; i++) {
+      out += s.slice(prev, clusters[i].start) + texts[i];
+      prev = clusters[i].end;
+    }
+    return out + s.slice(prev);
+  }
+
+  var $text = document.getElementById("text");
+  var $vset = document.getElementById("vset");
+  var $minlen = document.getElementById("minlen");
+  var $out1 = document.getElementById("out1");
+  var $out2 = document.getElementById("out2");
+  var $rule2 = document.getElementById("rule2");
+  var $unchanged = document.getElementById("unchanged");
+  var $scan = document.getElementById("scan");
+  var $flow = document.getElementById("flow");
+
+  function span(cls, text) {
+    var el = document.createElement("span");
+    if (cls) el.className = cls;
+    el.textContent = text;
+    return el;
+  }
+
+  function render() {
+    var s = $text.value;
+    var vowels = SETS[$vset.value];
+    var minLen = parseInt($minlen.value, 10);
+
+    $rule2.textContent = minLen === 1
+      ? "Every run of 1+ is movable — same as version 1"
+      : "Only clusters of " + minLen + "+ are movable";
+
+    $out1.textContent = reverseAll(s, vowels);
+    var v2 = reverseClusters(s, vowels, minLen);
+    $out2.textContent = v2;
+    $unchanged.hidden = !(s.length > 0 && v2 === s);
+
+    // Scan view
+    var runs = vowelRuns(s, vowels);
+    $scan.textContent = "";
+    var prev = 0;
+    var clusters = [];
+    runs.forEach(function (r) {
+      $scan.appendChild(span(null, s.slice(prev, r.start)));
+      var moves = r.end - r.start >= minLen;
+      $scan.appendChild(span(moves ? "cluster" : "lone", r.text));
+      if (moves) clusters.push(r.text);
+      prev = r.end;
+    });
+    $scan.appendChild(span(null, s.slice(prev)));
+    if (!s) $scan.appendChild(span("lone", " "));
+
+    // Flow view
+    $flow.textContent = "";
+    if (clusters.length === 0) {
+      $flow.appendChild(span("flow-label", s
+        ? "No clusters here — every vowel stands alone, so version 2 changes nothing."
+        : "Type something above."));
+      return;
+    }
+    var rows = [["in order", clusters, "chip"], ["reversed", clusters.slice().reverse(), "chip"]];
+    rows.forEach(function (row) {
+      var label = span("flow-label", row[0]);
+      label.style.flexBasis = "100%";
+      $flow.appendChild(label);
+      row[1].forEach(function (c, i) {
+        if (i) $flow.appendChild(span("arrow", "→"));
+        $flow.appendChild(span(row[2], c));
+      });
+    });
+  }
+
+  var $presets = document.getElementById("presets");
+  PRESETS.forEach(function (p) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = p;
+    b.addEventListener("click", function () {
+      $text.value = p;
+      if (/[Ā-ſ]/.test(p)) $vset.value = "lt";
+      render();
+    });
+    $presets.appendChild(b);
+  });
+
+  $text.addEventListener("input", render);
+  $vset.addEventListener("change", render);
+  $minlen.addEventListener("change", render);
+  render();
+})();
+</script>
+</body>
+</html>

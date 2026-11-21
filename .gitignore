@@ -141,6 +141,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
+# ...except this one: site/ is the static build Vercel serves as its Root Directory.
+!/site
 
 # mypy
 .mypy_cache/
