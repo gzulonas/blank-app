@@ -41,14 +41,13 @@ class Solution(object):
                 result.append(char)
         return ''.join(result)
 
-    # ---------------- Version 2: only clusters move ----------------
-    def reverseSpokenVowels(self, s, vowels=VOWELS_EN, min_len=2):
-        """Reverse only runs of `min_len`+ vowels; lone vowels stay put.
+    # ---------------- Shared helper ----------------
+    def vowelRuns(self, s, vowels=VOWELS_EN):
+        """Return every maximal run of vowels as (start, end, text).
 
-        A cluster keeps its own spelling and moves as one unit, so "ou"
-        stays "ou" -- it just lands where another cluster used to be.
+        Used by both version 2 and the UI, so the interface highlights
+        exactly what the algorithm acts on.
         """
-        #Step 1: Find every maximal run of consecutive vowel letters
         runs = []
         i = 0
         n = len(s)
@@ -57,14 +56,25 @@ class Solution(object):
                 j = i
                 while j < n and s[j] in vowels:
                     j += 1
-                runs.append((i, j))
+                runs.append((i, j, s[i:j]))
                 i = j
             else:
                 i += 1
+        return runs
+
+    # ---------------- Version 2: only clusters move ----------------
+    def reverseSpokenVowels(self, s, vowels=VOWELS_EN, min_len=2):
+        """Reverse only runs of `min_len`+ vowels; lone vowels stay put.
+
+        A cluster keeps its own spelling and moves as one unit, so "ou"
+        stays "ou" -- it just lands where another cluster used to be.
+        """
+        #Step 1: Find every maximal run of consecutive vowel letters
+        runs = self.vowelRuns(s, vowels)
 
         #Step 2: Keep only the clusters; a run of length 1 is a lone
         #        vowel, which is a positional marker and does not move
-        clusters = [(a, b) for (a, b) in runs if b - a >= min_len]
+        clusters = [(a, b) for (a, b, _) in runs if b - a >= min_len]
 
         #Step 3: Reverse the order of the cluster texts
         texts = [s[a:b] for (a, b) in clusters]
